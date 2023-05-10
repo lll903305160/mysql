@@ -1,0 +1,34 @@
+-- Achieve the function of regexp_replace in mysql5.7, which is only available in mysql8.0.
+
+#创建前删除已经创建的自定义函数
+drop function if exists regex_replace;
+#创建 regexp_replace函数
+DELIMITER $$
+CREATE FUNCTION  `regexp_replace`(string_a VARCHAR(1000),pattern VARCHAR(1000),string_b VARCHAR(1000))
+  RETURNS VARCHAR(1000)
+  DETERMINISTIC
+BEGIN
+ DECLARE string_c VARCHAR(1000);
+ DECLARE nub VARCHAR(1);
+ DECLARE i INT;
+ SET i =1;
+ SET string_c ='';
+ IF string_a REGEXP pattern THEN
+    loop_label: LOOP
+      IF i>CHAR_LENGTH(string_a) THEN
+        LEAVE loop_label;
+ END IF;
+ SET nub = SUBSTRING(string_a,i,1);
+ IF NOT nub REGEXP pattern THEN
+ SET string_c = CONCAT(string_c,nub);
+      ELSE
+        SET string_c = CONCAT(string_c,string_b);
+      END IF;
+      SET i=i+1;
+    END LOOP;
+  ELSE
+    SET string_c = string_a;
+  END IF;
+  RETURN string_c;
+END$$
+DELIMITER
